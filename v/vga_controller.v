@@ -24,6 +24,13 @@ wire [23:0] bgr_data_raw;
 wire cBLANK_n,cHS,cVS,rst;
 wire [10:0] xPos;
 wire [9:0] yPos;
+integer ballXDir = 1;
+integer ballYDir = 1;
+integer sideWall = 20;
+integer ballSpeed = 2;
+integer title = 50;
+integer offset = 5;
+
 ////
 assign rst = ~iRST_n;
 
@@ -62,12 +69,14 @@ begin
     begin
 		if (xPos >= ballX && xPos <= ballX + 12 && yPos >= ballY && yPos <= ballY + 12)
 					bgr_data <= {8'hff, 8'hff, 8'hff}; // white
-				else if (0<ADDR && ADDR <= VIDEO_W/3)
-					bgr_data <= {8'hff, 8'h00, 8'h00}; // blue
-				else if (ADDR > VIDEO_W/3 && ADDR <= VIDEO_W*2/3)
+				else if (yPos > 58 && yPos < 62)
 					bgr_data <= {8'h00,8'hff, 8'h00};  // green
-				else if(ADDR > VIDEO_W*2/3 && ADDR <=VIDEO_W)
-					bgr_data <= {8'h00, 8'h00, 8'hff}; // red
+				else if (yPos > VIDEO_H - 12 && yPos < VIDEO_H - 8)
+					bgr_data <= {8'h00,8'hff, 8'h00};  // green
+				else if ((xPos >= VIDEO_W/2 - 1) && (xPos < VIDEO_W/2 + 1) &&
+							(yPos > sideWall + title) && (yPos < VIDEO_H -sideWall) &&
+							(yPos % 20 < 10))
+					bgr_data <= {8'hff, 8'hff, 8'hff}; // white
 				else bgr_data <= 24'h0000; 
  
     end
@@ -75,8 +84,12 @@ end
 
 always @(negedge cVS)
 begin
-		ballX <= ballX + 11'd1;
-	if (ballX > VIDEO_W) ballX <= 11'd0;
+	ballX <= ballX + ballXDir; // Where the horizontal bouncing takes place
+	if (ballX > VIDEO_W - sideWall) ballXDir <= -ballSpeed;
+	else if (ballX < sideWall) ballXDir <= ballSpeed;
+	ballY <= ballY + ballYDir; // where the vertical bounce is calculated
+	if (ballY > VIDEO_H - sideWall - offset) ballYDir <= -ballSpeed;
+	else if (ballY < sideWall + title - offset) ballYDir <= ballSpeed;
 end
 assign oVGA_B=bgr_data[23:20];
 assign oVGA_G=bgr_data[15:12]; 
