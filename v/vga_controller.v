@@ -16,8 +16,8 @@ output [3:0] oVGA_G;
 output [3:0] oVGA_R;                       
 ///////// ////                     
 reg [18:0] ADDR ;
-reg [10:0] ballX;
-reg [9:0] ballY;
+reg [10:0] ballX = 0;
+reg [9:0] ballY = 50;
 wire VGA_CLK_n;
 wire [7:0] index;
 wire [23:0] bgr_data_raw;
@@ -75,7 +75,8 @@ end
 
 always @(negedge cVS)
 begin
-
+		ballX <= ballX + 11'd1;
+	if (ballX > VIDEO_W) ballX <= 11'd0;
 end
 assign oVGA_B=bgr_data[23:20];
 assign oVGA_G=bgr_data[15:12]; 
