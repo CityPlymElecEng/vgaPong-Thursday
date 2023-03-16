@@ -30,6 +30,12 @@ integer sideWall = 20;
 integer ballSpeed = 2;
 integer title = 50;
 integer offset = 5;
+integer paddle1Xpos = 50;
+integer paddle1Ypos = 240;
+integer paddle2Xpos = 600;
+integer paddle2Ypos = 240;
+integer paddleHeight = 60;
+integer paddleWidth = 10;
 
 ////
 assign rst = ~iRST_n;
@@ -67,8 +73,15 @@ begin
   end
     else
     begin
-		if (xPos >= ballX && xPos <= ballX + 12 && yPos >= ballY && yPos <= ballY + 12)
-					bgr_data <= {8'hff, 8'hff, 8'hff}; // white
+				if (yPos >= paddle1Ypos && yPos < paddle1Ypos + paddleHeight &&
+							xPos >= paddle1Xpos && xPos < paddle1Xpos + paddleWidth)
+					bgr_data <= {8'hff, 8'h00, 8'hff};  // Magenta paddle 1
+				else if (yPos >= paddle2Ypos && yPos < paddle2Ypos + paddleHeight &&
+							xPos >= paddle2Xpos && xPos < paddle2Xpos + paddleWidth)
+					bgr_data <= {8'hff, 8'hff, 8'h00};  // Cyan paddle 2
+				else if (xPos >= ballX && xPos <= ballX + 12 && yPos >= ballY && yPos <= ballY + 12)
+					bgr_data <= {8'hff, 8'hff, 8'hff}; // white ball
+
 				else if (yPos > 58 && yPos < 62)
 					bgr_data <= {8'h00,8'hff, 8'h00};  // green
 				else if (yPos > VIDEO_H - 12 && yPos < VIDEO_H - 8)
@@ -85,12 +98,22 @@ end
 always @(negedge cVS)
 begin
 	ballX <= ballX + ballXDir; // Where the horizontal bouncing takes place
-	if (ballX > VIDEO_W - sideWall) ballXDir <= -ballSpeed;
-	else if (ballX < sideWall) ballXDir <= ballSpeed;
 	ballY <= ballY + ballYDir; // where the vertical bounce is calculated
-	if (ballY > VIDEO_H - sideWall - offset) ballYDir <= -ballSpeed;
+	if (ballY >= paddle1Ypos && ballY < paddle1Ypos + paddleHeight &&
+		 ballX >= paddle1Xpos && ballX < paddle1Xpos + paddleWidth)
+		 ballXDir <= ballSpeed; // Paddle1 ball hit
+	else if (ballY >= paddle2Ypos && ballY < paddle2Ypos + paddleHeight &&
+		 ballX >= paddle2Xpos - paddleWidth && ballX < paddle2Xpos )
+		 ballXDir <= -ballSpeed; // Paddle2 ball hit
+	else if (ballX > VIDEO_W - sideWall) ballXDir <= -ballSpeed;
+	else if (ballX < sideWall) ballXDir <= ballSpeed;
+	else if (ballY > VIDEO_H - sideWall - offset) ballYDir <= -ballSpeed;
 	else if (ballY < sideWall + title - offset) ballYDir <= ballSpeed;
+	paddle1Ypos <= ballY - paddleHeight/2;
+	paddle2Ypos <= ballY - paddleHeight/2;
+	
 end
+
 assign oVGA_B=bgr_data[23:20];
 assign oVGA_G=bgr_data[15:12]; 
 assign oVGA_R=bgr_data[7:4];
