@@ -4,7 +4,7 @@ JedecChain;
 	DefaultMfr(6E);
 
 	P ActionCode(Cfg)
-		Device PartName(10M50DAF484) Path("D:/vgaStarter/vgaPong-Thursday/") File("DE10_LITE_VGA_Pattern.sof") MfrSpec(OpMask(1));
+		Device PartName(10M50DAF484ES) Path("D:/vgaStarter/vgaPong-Thursday/") File("DE10_LITE_VGA_Pattern.sof") MfrSpec(OpMask(1));
 
 ChainEnd;
 

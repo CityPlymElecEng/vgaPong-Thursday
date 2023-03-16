@@ -18,6 +18,9 @@ output [3:0] oVGA_R;
 reg [18:0] ADDR ;
 reg [10:0] ballX = 0;
 reg [9:0] ballY = 50;
+reg [11:0] charAddr;
+reg [7:0] charData;
+wire char_nWr;
 wire VGA_CLK_n;
 wire [7:0] index;
 wire [23:0] bgr_data_raw;
@@ -48,6 +51,16 @@ video_sync_generator LTM_ins (.vga_clk(iVGA_CLK),
 										.xPos(xPos),
 										.yPos(yPos)
 										);
+txtScreen txtScreen(
+      .hp(xPos),
+		.vp(yPos),
+		.addr(charAddr),
+		.data(charData),
+		.nWr (char_nWr),
+      .pClk(iVGA_CLK),
+		.nblnk(cBLANK_n),
+		.pix(textRGB)
+      );
 
 ////Addresss generator
 always@(posedge iVGA_CLK,negedge iRST_n)
@@ -55,7 +68,7 @@ begin
   if (!iRST_n)
      ADDR<=19'd0;
   else if (cBLANK_n==1'b1)
-     ADDR<=ADDR+1;
+     ADDR<=ADDR+19'd1;
 	  else
 	    ADDR<=19'd0;
 end
@@ -79,17 +92,18 @@ begin
 				else if (yPos >= paddle2Ypos && yPos < paddle2Ypos + paddleHeight &&
 							xPos >= paddle2Xpos && xPos < paddle2Xpos + paddleWidth)
 					bgr_data <= {8'hff, 8'hff, 8'h00};  // Cyan paddle 2
-				else if (xPos >= ballX && xPos <= ballX + 12 && yPos >= ballY && yPos <= ballY + 12)
-					bgr_data <= {8'hff, 8'hff, 8'hff}; // white ball
 
 				else if (yPos > 58 && yPos < 62)
-					bgr_data <= {8'h00,8'hff, 8'h00};  // green
+					bgr_data <= {8'h00,8'hff, 8'h00};  // green side line top
 				else if (yPos > VIDEO_H - 12 && yPos < VIDEO_H - 8)
-					bgr_data <= {8'h00,8'hff, 8'h00};  // green
+					bgr_data <= {8'h00,8'hff, 8'h00};  // green side line bottom
 				else if ((xPos >= VIDEO_W/2 - 1) && (xPos < VIDEO_W/2 + 1) &&
 							(yPos > sideWall + title) && (yPos < VIDEO_H -sideWall) &&
 							(yPos % 20 < 10))
-					bgr_data <= {8'hff, 8'hff, 8'hff}; // white
+					bgr_data <= {8'hcc, 8'hcc, 8'hcc}; // white net
+				else if (xPos >= ballX && xPos <= ballX + 12 && yPos >= ballY && yPos <= ballY + 12)
+					bgr_data <= {8'hff, 8'hff, 8'hff}; // white ball
+				else if (textRGB == 1'b1) bgr_data = {8'h00, 8'hcc, 8'hcc}; // yellow text
 				else bgr_data <= 24'h0000; 
  
     end
@@ -138,7 +152,7 @@ begin
   if (!iRST_n)
      H_Cont<=19'd0;
   else if (mHS==1'b1)
-     H_Cont<=H_Cont+1;
+     H_Cont<=H_Cont+19'd1;
 	  else
 	    H_Cont<=19'd0;
 end
