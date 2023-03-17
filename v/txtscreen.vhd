@@ -69,12 +69,12 @@ begin
   process(pClk)
   begin
     shifter(7 downto 0) <= q_8x12(7 downto 0);
-    if rising_edge(pClk) then
+    if falling_edge(pClk) then
 			if doubled = '0' then
-				pix <= shifter(6- (((hp/2)-2) mod 8));
+				pix <= shifter(7- (((hp/2)-2) mod 8));
 				doubled <= '1';
 			else
-				pix <= shifter(6- (((hp/2)-2) mod 8));
+				pix <= shifter(7- (((hp/2)-2) mod 8));
 				doubled <= '0';
 			end if;
     end if;
